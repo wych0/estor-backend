@@ -6,6 +6,8 @@ const {validationResult, check} = require('express-validator')
 
 router.post('/register', 
 check('email')
+.escape()
+.trim()
 .notEmpty().withMessage('E-mail field cannot be empty')
 .isEmail().withMessage('Invalid e-mail')
 .custom(async (email) => {
@@ -15,27 +17,51 @@ check('email')
     }
 }),
 
-check('password').notEmpty().withMessage('Password field cannot be empty'),
+check('password')
+.notEmpty().withMessage('Password field cannot be empty')
+.escape()
+.matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*]).{8,}$/).withMessage('Weak password'),
+
+check(['name', 'secName'])
+.notEmpty().withMessage('This field cannot be empty')
+.escape()
+.trim()
+.matches(/^[A-Za-z\s]+$/).withMessage('This field have to contain letters only'),
+
 async (req, res) => {
     const errors = validationResult(req)
     if(!errors.isEmpty()){
         return res.status(400).json({errors: errors.array()})
-    } else {
-        const hashedPassword = await bcrypt.hash(req.body.password, 10)
-        const user = new User({
-            name: req.body.name,
-            secName: req.body.secName,
-            email: req.body.email,
-            password: hashedPassword
-        })
-        await user.save()
-        res.status(200).json({message: "OK"})
-    }
+    } 
+    const {name, secName, email, password} = req.body
+    const hashedPassword = await bcrypt.hash(password, 10)
+    const user = new User({
+        name,
+        secName,
+        email,
+        password: hashedPassword
+    })
+    await user.save()
+    res.status(200).json({message: "Created user"})
 })
 
 
 router.post('/login',
+check('email')
+.escape()
+.trim()
+.notEmpty().withMessage('E-mail field cannot be empty')
+.isEmail().withMessage('Invalid e-mail'),
+
+check('password')
+.notEmpty().withMessage('Password field cannot be empty')
+.escape(),
+
 async (req, res) => {
+    const errors = validationResult(req)
+    if(!errors.isEmpty()){
+        return res.status(400).json({errors: errors.array()})
+    } 
     const user = await User.findOne({email: req.body.email})
     if(!user){
         return res.status(404).json({message: 'User with that e-mail not found'})
@@ -47,7 +73,7 @@ async (req, res) => {
         if(!isMatch){
             return res.status(401).json({message: 'Invalid password'})
         }
-        res.status(200).json({message: "OK"})
+        res.status(200).json({message: "Logged in"})
     })
 })
 
