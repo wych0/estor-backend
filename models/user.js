@@ -2,11 +2,11 @@ const mongoose = require('mongoose')
 const { Schema } = mongoose
 
 const userSchema = new mongoose.Schema({
-    name: {
+    name:{
         type: String,
         required: true,
     },
-    secName: {
+    secName:{
         type: String,
         required: true,
     },
@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    role: {
+    role:{
         type: String,
         default: 'klient' 
     }
