@@ -65,7 +65,7 @@ async (req, res) => {
     if(!errors.isEmpty()){
         return res.status(400).json({errors: errors.array()})
     }
-    if(req.cookies.userID!==''){
+    if(req.cookies.userID){
         return res.status(401).json({message: "You are already logged in"})
     }
     const {email, password} = req.body
@@ -87,10 +87,10 @@ async (req, res) => {
 
 router.post('/logout',
 async (req, res) =>{
-    if(req.cookies.userID===''){
+    if(!req.cookies.userID){
         return res.status(401).json({message: "You cannot logout"})
     }
-    res.cookie('userID', '')
+    res.clearCookie('userID')
     res.status(200).json({message: "Logged out"})
 })
 
