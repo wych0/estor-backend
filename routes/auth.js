@@ -64,7 +64,10 @@ async (req, res) => {
     const errors = validationResult(req)
     if(!errors.isEmpty()){
         return res.status(400).json({errors: errors.array()})
-    } 
+    }
+    if(req.cookies.userID!==''){
+        return res.status(401).json({message: "You are already logged in"})
+    }
     const {email, password} = req.body
     const user = await User.findOne({email})
     if(!user){
@@ -84,8 +87,7 @@ async (req, res) => {
 
 router.post('/logout',
 async (req, res) =>{
-    const {cookies} = req
-    if(cookies.userID===''){
+    if(req.cookies.userID===''){
         return res.status(401).json({message: "You cannot logout"})
     }
     res.cookie('userID', '')
