@@ -42,6 +42,7 @@ async (req, res) => {
         password: hashedPassword
     })
     await user.save()
+    res.cookie('userID', user._id.toString())
     res.status(200).json({message: "Created user"})
 })
 
@@ -62,19 +63,27 @@ async (req, res) => {
     if(!errors.isEmpty()){
         return res.status(400).json({errors: errors.array()})
     } 
-    const user = await User.findOne({email: req.body.email})
+    const {email, password} = req.body
+    const user = await User.findOne({email})
     if(!user){
         return res.status(404).json({message: 'User with that e-mail not found'})
     }
-    bcrypt.compare(req.body.password, user.password, (err, isMatch) =>{
+    bcrypt.compare(password, user.password, (err, isMatch) =>{
         if(err){
             return res.status(500).json({message: 'Error occured'})
         }
         if(!isMatch){
             return res.status(401).json({message: 'Invalid password'})
         }
+        res.cookie('userID', user._id.toString())
         res.status(200).json({message: "Logged in"})
     })
+})
+
+router.post('/logout', 
+async (req, res) =>{
+    res.cookie('userID', '')
+    res.status(200).json({message: "Logged out"})
 })
 
 module.exports = router
