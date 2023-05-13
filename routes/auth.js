@@ -3,6 +3,8 @@ const bcrypt = require('bcrypt')
 const router = express.Router()
 const User = require('../models/User')
 const {validationResult, check} = require('express-validator')
+const cookieParser = require('cookie-parser')
+router.use(cookieParser())
 
 router.post('/register', 
 check('email')
@@ -80,8 +82,12 @@ async (req, res) => {
     })
 })
 
-router.post('/logout', 
+router.post('/logout',
 async (req, res) =>{
+    const {cookies} = req
+    if(cookies.userID===''){
+        return res.status(401).json({message: "You cannot logout"})
+    }
     res.cookie('userID', '')
     res.status(200).json({message: "Logged out"})
 })
