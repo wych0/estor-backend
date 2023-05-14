@@ -7,7 +7,7 @@ const orderSchema = new mongoose.Schema({
         required: true,
         default: Date.now
     }, 
-    price:{
+    cost:{
         type: Number,
         required: true
     },
@@ -16,9 +16,9 @@ const orderSchema = new mongoose.Schema({
         required: true,
         default: "W realizacji"
     },
-    userID:{
+    userEmail:{
         type: String,
-        required: true
+        required: true,
     },
     products:{
         type: Array,
