@@ -16,6 +16,11 @@ check('userEmail')
     }
 }),
 
+check('cost')
+.escape()
+.trim()
+.notEmpty().withMessage('Cost field cannot be empty'),
+
 async (req, res) => {
     const errors = validationResult(req)
     if(!errors.isEmpty()){
