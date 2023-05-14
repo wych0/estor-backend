@@ -18,7 +18,11 @@ db.once('open', () => console.log('Connected to database'))
 app.use(express.json())
 
 const authRouter = require('./routes/auth')
+const productRouter = require('./routes/product')
+const orderRouter = require('./routes/order')
 
 app.use('/auth', authRouter)
+app.use('/product', productRouter)
+app.use('/order', orderRouter)
 
 app.listen(3000, () => console.log('Server Started'))
