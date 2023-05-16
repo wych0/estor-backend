@@ -35,7 +35,7 @@ async (req, res) => {
         return res.status(403).json({message: 'You have to be logged in'})
     }
     user = await User.findById(new ObjectId(userID))
-    if(!user || user.role!=='admin'){
+    if(user.role!=='admin'){
         return res.status(403).json({message: 'You cant add product to database'})
     }
     const {name, brand, price, image} = req.body
