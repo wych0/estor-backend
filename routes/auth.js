@@ -35,6 +35,10 @@ async (req, res) => {
     if(!errors.isEmpty()){
         return res.status(400).json({errors: errors.array()})
     } 
+    userID = req.cookies.userID
+    if(userID){
+        return res.status(403).json({error: 'Logout before register'})
+    }
     const {name, secName, email, password} = req.body
     const hashedPassword = await bcrypt.hash(password, 10)
     const user = new User({
@@ -66,7 +70,7 @@ async (req, res) => {
         return res.status(400).json({errors: errors.array()})
     }
     if(req.cookies.userID){
-        return res.status(401).json({message: "You are already logged in"})
+        return res.status(403).json({message: "You are already logged in"})
     }
     const {email, password} = req.body
     const user = await User.findOne({email})
@@ -78,7 +82,7 @@ async (req, res) => {
             return res.status(500).json({message: 'Error occured'})
         }
         if(!isMatch){
-            return res.status(401).json({message: 'Invalid password'})
+            return res.status(403).json({message: 'Invalid password'})
         }
         res.cookie('userID', user._id.toString())
         res.status(200).json({message: "Logged in"})
@@ -88,7 +92,7 @@ async (req, res) => {
 router.post('/logout',
 async (req, res) =>{
     if(!req.cookies.userID){
-        return res.status(401).json({message: "You cannot logout"})
+        return res.status(403).json({message: "You cannot logout"})
     }
     res.clearCookie('userID')
     res.status(200).json({message: "Logged out"})
