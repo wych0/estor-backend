@@ -52,12 +52,20 @@ check('products')
     }
 }),
 
+check(['address.name','address.country','address.secName','address.street','address.city','address.postalCode','address.email'])
+.trim()
+.escape()
+.notEmpty().withMessage('This field cannot be empty'),
+
+check('address.email')
+.isEmail().withMessage('Invalid e-mail'),
+
 async (req, res) => {
     const errors = validationResult(req)
     if(!errors.isEmpty()){
         return res.status(400).json({errors: errors.array()})
     }
-    const {cost, userEmail, products} = req.body
+    const {cost, userEmail, products, address} = req.body
     const userID = req.cookies.userID
     if(!userID){
         return res.status(401).json({message: 'Login to place order'})
@@ -66,7 +74,16 @@ async (req, res) => {
         userEmail,
         cost,
         products,
-        userID
+        userID,
+        address:{
+            name: address.name,
+            secName: address.secName,
+            street: address.street,
+            city: address.city,
+            postalCode: address.postalCode,
+            email: address.email,
+            country: address.country
+        }
     })
     products.forEach(async(productID) => {
         await Product.findByIdAndUpdate(new ObjectId(productID), {isSold: true})
@@ -101,9 +118,11 @@ async(req, res) => {
     const user = await User.findById(new ObjectId(userID))
     const {orderID} = req.body
     const order = await Order.findOne({_id: new ObjectId(orderID)})
-    if(order.userID!==user._id && user.role!=='admin'){
-        return res.status(401).json({message: 'You cannot cancel this order'})
+
+    if(user.role !== 'admin' && order.userID !== user._id.toString()){
+        return res.status(403).json({message: 'You cannot cancel this order'})
     }
+
     order.products.forEach(async(product)=>{
         await Product.findByIdAndUpdate(new ObjectId(product), {isSold: false})
     })
