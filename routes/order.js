@@ -68,7 +68,7 @@ async (req, res) => {
     const {cost, userEmail, products, address} = req.body
     const userID = req.cookies.userID
     if(!userID){
-        return res.status(401).json({message: 'Login to place order'})
+        return res.status(403).json({message: 'Login to place order'})
     }
     const order = new Order({
         userEmail,
