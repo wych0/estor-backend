@@ -51,22 +51,17 @@ check('products')
         }
     }
 }),
-check('userID')
-.escape()
-.trim()
-.custom(async (userID)=>{
-    const user = await User.findOne({_id: new ObjectId(userID)})
-    if(!user){
-        return Promise.reject('User with that id not found')
-    }
-}),
 
 async (req, res) => {
     const errors = validationResult(req)
     if(!errors.isEmpty()){
         return res.status(400).json({errors: errors.array()})
     }
-    const {cost, userEmail, products, userID} = req.body
+    const {cost, userEmail, products} = req.body
+    const userID = req.cookies.userID
+    if(!userID){
+        return res.status(401).json({message: 'Login to place order'})
+    }
     const order = new Order({
         userEmail,
         cost,
@@ -103,11 +98,15 @@ async(req, res) => {
         return res.status(400).json({errors: errors.array()})
     }
     const userID = req.cookies.userID
+    const user = await User.findById(new ObjectId(userID))
     const {orderID} = req.body
     const order = await Order.findOne({_id: new ObjectId(orderID)})
-    if(order.userID!==userID){
+    if(order.userID!==user._id && user.role!=='admin'){
         return res.status(401).json({message: 'You cannot cancel this order'})
     }
+    order.products.forEach(async(product)=>{
+        await Product.findByIdAndUpdate(new ObjectId(product), {isSold: false})
+    })
     await Order.findByIdAndUpdate(new ObjectId(orderID), {status: 'Anulowane'})
     res.status(200).json({message: 'Order cancelled'})
 }
