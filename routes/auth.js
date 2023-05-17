@@ -85,7 +85,7 @@ async (req, res) => {
             return res.status(403).json({message: 'Invalid password'})
         }
         res.cookie('userID', user._id.toString())
-        res.status(200).json({message: "Logged in"})
+        res.status(200).json({message: "Logged in", role: user.role})
     })
 })
 
