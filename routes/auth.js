@@ -2,9 +2,15 @@ const express = require('express')
 const bcrypt = require('bcrypt')
 const router = express.Router()
 const User = require('../models/User')
+const {ObjectId} = require('mongodb')
 const {validationResult, check} = require('express-validator')
 const cookieParser = require('cookie-parser')
+
 router.use(cookieParser())
+
+const formatString = (string)=>{
+    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase()
+}
 
 router.post('/register', 
 check('email')
@@ -40,8 +46,8 @@ async (req, res) => {
     }
     const hashedPassword = await bcrypt.hash(password, 10)
     const user = new User({
-        name,
-        secName,
+        name: formatString(name),
+        secName: formatString(secName),
         email,
         password: hashedPassword
     })
@@ -73,14 +79,17 @@ async (req, res) => {
     const {email, password} = req.body
     const user = await User.findOne({email})
     if(!user){
-        return res.status(404).json({message: 'User with that e-mail not found'})
+        return res.status(404).json({message: 'Invalid e-mail or password'})
+    }
+    if(user.accountStatus!=='Aktywne'){
+        return res.status(403).json({message: 'Your account is blocked'})
     }
     bcrypt.compare(password, user.password, (err, isMatch) =>{
         if(err){
             return res.status(500).json({message: 'Error occured'})
         }
         if(!isMatch){
-            return res.status(403).json({message: 'Invalid password'})
+            return res.status(403).json({message: 'Invalid e-mail or password'})
         }
         res.cookie('userID', user._id.toString())
         res.status(200).json({message: "Logged in", role: user.role})
@@ -94,6 +103,15 @@ async (req, res) =>{
     }
     res.clearCookie('userID')
     res.status(200).json({message: "Logged out"})
+})
+
+router.get('/role',
+async (req, res) =>{
+    if(!req.cookies.userID){
+        return res.status(200).json({role: 'none'})
+    }
+    const user = await User.findById(new ObjectId(req.cookies.userID))
+    return res.status(200).json({role: user.role})
 })
 
 module.exports = router
