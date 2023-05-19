@@ -11,13 +11,7 @@ check('email')
 .escape()
 .trim()
 .notEmpty().withMessage('E-mail field cannot be empty')
-.isEmail().withMessage('Invalid e-mail')
-.custom(async (email) => {
-    const user = await User.findOne({email: email})
-    if(user){
-        return Promise.reject('This e-mail is already used')
-    }
-}),
+.isEmail().withMessage('Invalid e-mail'),
 
 check('password')
 .notEmpty().withMessage('Password field cannot be empty')
@@ -40,6 +34,10 @@ async (req, res) => {
         return res.status(403).json({error: 'Logout before register'})
     }
     const {name, secName, email, password} = req.body
+    const userFind = await User.findOne({email: email})
+    if(userFind){
+        return res.status(403).json({error:'This e-mail is already used'})
+    }
     const hashedPassword = await bcrypt.hash(password, 10)
     const user = new User({
         name,
