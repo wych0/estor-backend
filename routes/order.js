@@ -99,6 +99,7 @@ check('orderID')
 .notEmpty().withMessage('OrderID field cannot be empty')
 .trim()
 .escape()
+.isMongoId().withMessage('Invalid id')
 .custom(async(orderID)=>{
     const order = await Order.findOne({_id: new ObjectId(orderID)})
     if(!order){
