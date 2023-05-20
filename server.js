@@ -25,9 +25,11 @@ app.use(cors({
 const authRouter = require('./routes/auth')
 const productRouter = require('./routes/product')
 const orderRouter = require('./routes/order')
+const cartRouter = require('./routes/cart')
 
 app.use('/auth', authRouter)
 app.use('/product', productRouter)
 app.use('/order', orderRouter)
+app.use('/cart', cartRouter)
 
 app.listen(8000, () => console.log('Server Started'))
