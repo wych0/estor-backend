@@ -26,6 +26,10 @@ const userSchema = new mongoose.Schema({
     accountStatus:{
         type: String,
         default: 'Aktywne'
+    },
+    cartItems:{
+        type: Array,
+        default: []
     }
 })
 
