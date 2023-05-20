@@ -84,4 +84,30 @@ async (req, res) => {
 }
 )
 
+router.post('/addToCart',
+async(req, res) =>{
+    const userID = req.cookies.userID
+    if(!userID){
+        return res.status(403).json({message: 'Login to add product to cart'})
+    }
+    const {productID} = req.body
+    const product = await Product.findById(new ObjectId(productID))
+    if(!product){
+        return res.status(404).json({message: 'Product with that id not found'})
+    }
+    if(product.isSold){
+        return res.status(403).json({message: 'You cannot buy sold product'})
+    }
+    const user = await User.findById(new ObjectId(userID))
+    for(let i=0; i<user.cartItems.length; i++){
+        const userProduct = user.cartItems[i]
+        if(userProduct._id.toString()===product._id.toString()){
+            return res.status(403).json({message: 'Product with that id already added to cart'})
+        }
+    }
+    user.cartItems.push(product)
+    await user.save()
+    return res.status(200).json({message: 'Product added to cart'})
+})
+
 module.exports = router
