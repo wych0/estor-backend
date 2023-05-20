@@ -55,6 +55,7 @@ check('productID')
 .trim()
 .escape()
 .notEmpty().withMessage('ProductID field cannot be empty')
+.isMongoId().withMessage('Invalid id')
 .custom(async(productID)=>{
     const product = await Product.findById(new ObjectId(productID))
     if(!product){
@@ -85,7 +86,16 @@ async (req, res) => {
 )
 
 router.post('/addToCart',
+check('productID')
+.trim()
+.escape()
+.notEmpty().withMessage('ProductID field cannot be empty')
+.isMongoId().withMessage('Invalid id'),
 async(req, res) =>{
+    const errors = validationResult(req)
+    if(!errors.isEmpty()){
+        return res.status(400).json({errors: errors.array()})
+    }
     const userID = req.cookies.userID
     if(!userID){
         return res.status(403).json({message: 'Login to add product to cart'})
@@ -108,6 +118,36 @@ async(req, res) =>{
     user.cartItems.push(product)
     await user.save()
     return res.status(200).json({message: 'Product added to cart'})
+})
+
+router.delete('/deleteFromCart',
+check('productID')
+.trim()
+.escape()
+.notEmpty().withMessage('ProductID field cannot be empty')
+.isMongoId().withMessage('Invalid id'),
+async(req, res) =>{
+    const errors = validationResult(req)
+    if(!errors.isEmpty()){
+        return res.status(400).json({errors: errors.array()})
+    }
+    const userID = req.cookies.userID
+    if(!userID){
+        return res.status(403).json({message: 'Login to delete product from cart'})
+    }
+    const {productID} = req.body
+    const product = await Product.findById(new ObjectId(productID))
+    if(!product){
+        return res.status(404).json({message: 'Product with that id not found'})
+    }
+    const user = await User.findById(new ObjectId(userID))
+    const productIndex = user.cartItems.findIndex((userProduct) => userProduct._id.toString()===product._id.toString())
+    if(productIndex === -1){
+        return res.status(403).json({message: 'This product is not added to your cart'})
+    }
+    user.cartItems.splice(productIndex, 1)
+    await user.save()
+    return res.status(200).json({message: 'Product deleted from cart'})
 })
 
 module.exports = router
