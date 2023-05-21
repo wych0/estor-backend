@@ -159,4 +159,14 @@ async(req, res)=>{
     return res.status(200).json({products: products})
 })
 
+router.get('/',
+async(req, res)=>{
+    const {productID} = req.body
+    const product = await Product.findById(new ObjectId(productID))
+    if(!product){
+        return res.status(404).json({message: 'Product with that id not found'})
+    }
+    return res.status(200).json({product: product})
+})
+
 module.exports = router
