@@ -150,4 +150,13 @@ async(req, res) =>{
     return res.status(200).json({message: 'Product deleted from cart'})
 })
 
+router.get('/all',
+async(req, res)=>{
+    const products = await Product.find()
+    if(!products){
+        return res.status(404).json({message: 'No product in database'})
+    }
+    return res.status(200).json({products: products})
+})
+
 module.exports = router
