@@ -11,13 +11,14 @@ router.get('/',
 async(req, res)=>{
     const userID = req.cookies.userID
     if(!userID){
-        res.status(403).json({message: 'Log in to get cart items'})
+        return res.status(403).json({message: 'Log in to get cart items'})
     }
     const user = await User.findById(new ObjectId(userID))
     if(!user){
-        res.status(404).json({message: 'User not found'})
+        return res.status(404).json({message: 'User not found'})
     }
-    res.status(200).json({cartItems: user.cartItems})
+    const cartItemsIds = user.cartItems.map((item)=>item._id)
+    return res.status(200).json({cartItems: cartItemsIds})
 })
 
 module.exports = router
