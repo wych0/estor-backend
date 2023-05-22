@@ -141,4 +141,25 @@ async(req, res)=>{
     return res.status(200).json({orders: orders})
 })
 
+router.get('/userOrders',
+check('userID')
+.trim()
+.escape()
+.notEmpty().withMessage('userID field cannot be empty')
+.isMongoId().withMessage('Invalid id'),
+async(req, res)=>{
+    const errors = validationResult(req)
+    if(!errors.isEmpty()){
+        return res.status(400).json({errros: errors.array()})
+    }
+    const {userID} = req.query
+    const orders = await Order.find({userID})
+    console.log(orders)
+    if(orders.length===0){
+        return res.status(200).json({message: 'No orders'})
+    }
+    return res.status(200).json({orders: orders})
+    }
+)
+
 module.exports = router
