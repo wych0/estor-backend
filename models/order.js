@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const moment = require('moment-timezone')
 const { Schema } = mongoose
 
 const addressSchema = new mongoose.Schema({
@@ -34,9 +35,9 @@ const addressSchema = new mongoose.Schema({
 
 const orderSchema = new mongoose.Schema({
     date:{
-        type: Date,
+        type: String,
         required: true,
-        default: Date.now
+        default: moment.tz('Europe/Warsaw').format(('DD-MM-YYYY'))
     }, 
     cost:{
         type: Number,
