@@ -117,7 +117,7 @@ async(req, res) =>{
     }
     user.cartItems.push(product)
     await user.save()
-    return res.status(200).json({message: 'Product added to cart'})
+    return res.status(200).json({message: 'Product added to cart', product: product})
 })
 
 router.delete('/deleteFromCart',
@@ -160,8 +160,17 @@ async(req, res)=>{
 })
 
 router.get('/',
+check('productID')
+.trim()
+.escape()
+.notEmpty().withMessage('ProductID field cannot be empty')
+.isMongoId().withMessage('Invalid id'),
 async(req, res)=>{
-    const {productID} = req.body
+    const errors = validationResult(req)
+    if(!errors.isEmpty()){
+        return res.status(400).json({errros: errors.array()})
+    }
+    const {productID} = req.query
     const product = await Product.findById(new ObjectId(productID))
     if(!product){
         return res.status(404).json({message: 'Product with that id not found'})
