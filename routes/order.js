@@ -154,7 +154,6 @@ async(req, res)=>{
     }
     const {userID} = req.query
     const orders = await Order.find({userID})
-    console.log(orders)
     if(orders.length===0){
         return res.status(200).json({message: 'No orders'})
     }
