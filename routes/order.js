@@ -132,4 +132,13 @@ async(req, res) => {
 }
 )
 
+router.get('/all',
+async(req, res)=>{
+    const orders = await Order.find()
+    if(!orders){
+        return res.status(404).json({message: 'No orders in database'})
+    }
+    return res.status(200).json({orders: orders})
+})
+
 module.exports = router
