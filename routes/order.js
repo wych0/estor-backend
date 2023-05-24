@@ -10,12 +10,6 @@ router.use(cookieParser())
 
 router.post('/',
 
-check('cost')
-.escape()
-.trim()
-.notEmpty().withMessage('Cost field cannot be empty')
-.isDecimal().withMessage('Cost field must be a number'),
-
 check(['address.name','address.country','address.secName','address.street','address.city','address.postalCode','address.email'])
 .trim()
 .escape()
@@ -29,7 +23,7 @@ async (req, res) => {
     if(!errors.isEmpty()){
         return res.status(400).json({errors: errors.array()})
     }
-    const {cost, userEmail, address} = req.body
+    const {userEmail, address} = req.body
     const userID = req.cookies.userID
     if(!userID){
         return res.status(403).json({message: 'Login to place order'})
@@ -38,6 +32,8 @@ async (req, res) => {
     if(user.cartItems.length===0){
         return res.status(403).json({message: 'Your cart is empty'})
     }
+    const cost = user.cartItems.reduce((accumulator, currentValue) => accumulator + currentValue.price, 0)
+
     const order = new Order({
         userEmail,
         cost,
