@@ -59,6 +59,7 @@ async (req, res) => {
     }
 
     user.cartItems = []
+    user.shipAddress = address
     await user.save()
     await order.save()
     res.status(200).json({message: 'Placed order'})
@@ -131,5 +132,6 @@ async(req, res)=>{
     return res.status(200).json({orders: orders})
     }
 )
+
 
 module.exports = router
