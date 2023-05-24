@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const addressSchema = require('./addressSchema')
 const { Schema } = mongoose
 
 const userSchema = new mongoose.Schema({
@@ -30,6 +31,9 @@ const userSchema = new mongoose.Schema({
     cartItems:{
         type: Array,
         default: []
+    },
+    shipAddress:{
+        type: addressSchema
     }
 })
 
