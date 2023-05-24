@@ -105,28 +105,4 @@ async (req, res) =>{
     res.status(200).json({message: "Logged out"})
 })
 
-router.get('/role',
-async (req, res) =>{
-    if(!req.cookies.userID){
-        return res.status(200).json({role: 'none'})
-    }
-    const user = await User.findById(new ObjectId(req.cookies.userID))
-    if(!user){
-        return res.status(404).json({message: 'User not found'})
-    }
-    return res.status(200).json({role: user.role})
-})
-
-router.get('/',
-async(req, res)=>{
-    if(!req.cookies.userID){
-        return res.status(200).json({isAuth: false})
-    }
-    const user = await User.findById(new ObjectId(req.cookies.userID))
-    if(!user){
-        return res.status(404).json({error: 'User not found'})
-    }
-    return res.status(200).json({isAuth: true})
-})
-
 module.exports = router
