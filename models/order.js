@@ -48,10 +48,6 @@ const orderSchema = new mongoose.Schema({
         required: true,
         default: "W realizacji"
     },
-    userEmail:{
-        type: String,
-        required: true,
-    },
     userID:{
         type: String,
         required: true,
