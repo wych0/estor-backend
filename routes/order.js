@@ -15,6 +15,9 @@ check(['address.name','address.country','address.secName','address.street','addr
 .escape()
 .notEmpty().withMessage('This field cannot be empty'),
 
+check('address.postalCode')
+.matches(/^[0-9]{2}-[0-9]{3}$/).withMessage('Invalid postalcode'),
+
 check('address.email')
 .isEmail().withMessage('Invalid e-mail'),
 
