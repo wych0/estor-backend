@@ -2,15 +2,11 @@ const express = require('express')
 const bcrypt = require('bcrypt')
 const router = express.Router()
 const User = require('../models/User')
-const {ObjectId} = require('mongodb')
 const {validationResult, check} = require('express-validator')
 const cookieParser = require('cookie-parser')
+const formatString = require('../formatString')
 
 router.use(cookieParser())
-
-const formatString = (string)=>{
-    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase()
-}
 
 router.post('/register', 
 check('email')
