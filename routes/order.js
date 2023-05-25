@@ -105,6 +105,25 @@ async(req, res) => {
 }
 )
 
+router.get('/',
+check('orderID')
+.trim()
+.escape()
+.notEmpty().withMessage('orderID field cannot be empty')
+.isMongoId().withMessage('Invalid id'),
+async(req, res)=>{
+    const errors = validationResult(req)
+    if(!errors.isEmpty()){
+        return res.status(400).json({errors: errors.array()})
+    }
+    const {orderID} = req.query
+    const order = await Order.findById(new ObjectId(orderID))
+    if(!order){
+        return res.status(404).json({error: 'Order with that id not found'})
+    }
+    return res.status(200).json({order: order})
+})
+
 router.get('/all',
 async(req, res)=>{
     const orders = await Order.find()
