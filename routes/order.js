@@ -6,6 +6,7 @@ const Order = require('../models/order')
 const User = require('../models/User')
 const Product = require('../models/product')
 const cookieParser = require('cookie-parser')
+const formatString = require('../formatString')
 router.use(cookieParser())
 
 router.post('/',
@@ -43,13 +44,13 @@ async (req, res) => {
         products: user.cartItems,
         userID,
         address:{
-            name: address.name,
-            secName: address.secName,
-            street: address.street,
-            city: address.city,
+            name: formatString(address.name),
+            secName: formatString(address.secName),
+            street: formatString(address.street),
+            city: formatString(address.city),
             postalCode: address.postalCode,
             email: address.email,
-            country: address.country
+            country: formatString(address.country)
         }
     })
 
@@ -59,7 +60,7 @@ async (req, res) => {
     }
 
     user.cartItems = []
-    user.shipAddress = address
+    user.shipAddress = order.address
     await user.save()
     await order.save()
     res.status(200).json({message: 'Placed order'})
