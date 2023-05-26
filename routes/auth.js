@@ -49,7 +49,7 @@ async (req, res) => {
     })
     await user.save()
     res.cookie('userID', user._id.toString())
-    res.status(200).json({message: "Created user"})
+    res.status(200).json({message: "Created user", role: user.role})
 })
 
 
