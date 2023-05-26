@@ -67,22 +67,12 @@ async (req, res) => {
 }
 )
 
-router.post('/cancel',
+router.put('/cancel/:orderID',
 check('orderID')
 .notEmpty().withMessage('OrderID field cannot be empty')
 .trim()
 .escape()
-.isMongoId().withMessage('Invalid id')
-.custom(async(orderID)=>{
-    const order = await Order.findOne({_id: new ObjectId(orderID)})
-    if(!order){
-        return Promise.reject('Cant find order with that id')
-    }
-    if(order.status!=='W realizacji'){
-        return Promise.reject('Cant cancel this order')
-    }
-}),
-
+.isMongoId().withMessage('Invalid id'),
 async(req, res) => {
     const errors = validationResult(req)
     if(!errors.isEmpty()){
@@ -90,20 +80,31 @@ async(req, res) => {
     }
     const userID = req.cookies.userID
     const user = await User.findById(new ObjectId(userID))
-    const {orderID} = req.body
+    if(!user){
+        return res.status(404).json({error: 'User with that id not found'})
+    }
+    const {orderID} = req.params
     const order = await Order.findOne({_id: new ObjectId(orderID)})
+    if(!order){
+        return res.status(404).json({error: 'Order with that id not found'})
+    }
 
     if(user.role !== 'admin' && order.userID !== user._id.toString()){
         return res.status(403).json({message: 'You cannot cancel this order'})
     }
 
-    order.products.forEach(async(product)=>{
-        await Product.findByIdAndUpdate(new ObjectId(product), {isSold: false})
-    })
+    if(order.status!=='W realizacji'){
+        return res.status(403).json({error: 'This order cannot be cancelled'})
+    }
+
+    for(const product of order.products){
+        const productVar = await Product.findByIdAndUpdate(product._id, {isSold: false})
+        await productVar.save()
+    }
+
     await Order.findByIdAndUpdate(new ObjectId(orderID), {status: 'Anulowane'})
-    res.status(200).json({message: 'Order cancelled'})
-}
-)
+    return res.status(200).json({message: 'Order cancelled'})
+})
 
 router.get('/',
 check('orderID')
