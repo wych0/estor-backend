@@ -146,7 +146,7 @@ async(req, res)=>{
         return res.status(400).json({errros: errors.array()})
     }
     const {userID} = req.query
-    const orders = await Order.find({userID})
+    const orders = await Order.find({userID}).sort({status: -1})
     if(orders.length===0){
         return res.status(200).json({message: 'No orders'})
     }
