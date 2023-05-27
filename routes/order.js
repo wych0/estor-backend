@@ -127,6 +127,14 @@ async(req, res)=>{
 
 router.get('/all',
 async(req, res)=>{
+    const userID = req.cookies.userID
+    if(!userID){
+        return res.status(403).json({error: 'You have to be logged in'})
+    }
+    const user = await User.findById(new ObjectId(userID))
+    if(user.role!=='admin'){
+        return res.status(403).json({error: 'You cannot perform this action'})
+    }
     const orders = await Order.find()
     if(!orders){
         return res.status(404).json({message: 'No orders in database'})
