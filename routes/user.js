@@ -46,4 +46,18 @@ async(req, res)=>{
     return res.status(200).json({isAuth: true})
 })
 
+router.get('/all',
+async(req, res)=>{
+    const userID = req.cookies.userID
+    if(!userID){
+        return res.status(403).json({error: 'You have to be logged in'})
+    }
+    const user = await User.findById(new ObjectId(userID))
+    if(user.role!=='admin'){
+        return res.status(403).json({error: 'You cannot perform this action'})
+    }
+    const users = await User.find()
+    return res.status(200).json({users})
+})
+
 module.exports = router
