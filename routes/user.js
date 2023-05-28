@@ -56,7 +56,7 @@ async(req, res)=>{
     if(user.role!=='admin'){
         return res.status(403).json({error: 'You cannot perform this action'})
     }
-    const users = await User.find({role: 'klient'})
+    const users = await User.find({role: 'klient'}).select('-password')
     return res.status(200).json({users})
 })
 
@@ -72,7 +72,7 @@ async(req, res)=>{
         return res.status(400).json({errors: errors.array()})
     }
     const {userID} = req.params
-    const user = await User.findById(new ObjectId(userID))
+    const user = await User.findById(new ObjectId(userID)).select('-password')
     if(!user){
         return res.status(404).json({error: 'User not found'})
     }
