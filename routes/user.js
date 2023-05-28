@@ -72,16 +72,44 @@ async(req, res)=>{
         return res.status(400).json({errors: errors.array()})
     }
     const {userID} = req.params
-    console.log(userID)
     const user = await User.findById(new ObjectId(userID))
     if(!user){
         return res.status(404).json({error: 'User not found'})
     }
     if(user.role==='admin'){
-        return res.status(403).json({error: 'You cant block admin'})
+        return res.status(403).json({error: 'You cant perform this action'})
+    }
+    if(user.accountStatus==='Zablokowane'){
+        return res.status(200).json({message: 'Account blocked'})
     }
     await User.findByIdAndUpdate(new ObjectId(userID), {accountStatus: 'Zablokowane'})
-    return res.status(200).json({message: 'User blocked'})
+    return res.status(200).json({message: 'Account blocked'})
+})
+
+router.put('/unblock/:userID',
+check('userID')
+.notEmpty().withMessage('UserID field cannot be empty')
+.trim()
+.escape()
+.isMongoId().withMessage('Invalid id'),
+async(req, res)=>{
+    const errors = validationResult(req)
+    if(!errors.isEmpty()){
+        return res.status(400).json({errors: errors.array()})
+    }
+    const {userID} = req.params
+    const user = await User.findById(new ObjectId(userID))
+    if(!user){
+        return res.status(404).json({error: 'User not found'})
+    }
+    if(user.role==='admin'){
+        return res.status(403).json({error: 'You cant perform this action'})
+    }
+    if(user.accountStatus==='Aktywne'){
+        return res.status(200).json({error: 'Account activated'})
+    }
+    await User.findByIdAndUpdate(new ObjectId(userID), {accountStatus: 'Aktywne'})
+    return res.status(200).json({message: 'Account activated'})
 })
 
 
