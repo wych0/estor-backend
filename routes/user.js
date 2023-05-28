@@ -56,8 +56,33 @@ async(req, res)=>{
     if(user.role!=='admin'){
         return res.status(403).json({error: 'You cannot perform this action'})
     }
-    const users = await User.find()
+    const users = await User.find({role: 'klient'})
     return res.status(200).json({users})
 })
+
+router.put('/block/:userID',
+check('userID')
+.notEmpty().withMessage('UserID field cannot be empty')
+.trim()
+.escape()
+.isMongoId().withMessage('Invalid id'),
+async(req, res)=>{
+    const errors = validationResult(req)
+    if(!errors.isEmpty()){
+        return res.status(400).json({errors: errors.array()})
+    }
+    const {userID} = req.params
+    console.log(userID)
+    const user = await User.findById(new ObjectId(userID))
+    if(!user){
+        return res.status(404).json({error: 'User not found'})
+    }
+    if(user.role==='admin'){
+        return res.status(403).json({error: 'You cant block admin'})
+    }
+    await User.findByIdAndUpdate(new ObjectId(userID), {accountStatus: 'Zablokowane'})
+    return res.status(200).json({message: 'User blocked'})
+})
+
 
 module.exports = router
