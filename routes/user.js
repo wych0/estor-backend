@@ -60,6 +60,25 @@ async(req, res)=>{
     return res.status(200).json({users})
 })
 
+router.get('/:userID',
+check('userID')
+.notEmpty().withMessage('UserID field cannot be empty')
+.trim()
+.escape()
+.isMongoId().withMessage('Invalid id'),
+async(req, res)=>{
+    const errors = validationResult(req)
+    if(!errors.isEmpty()){
+        return res.status(400).json({errors: errors.array()})
+    }
+    const {userID} = req.params
+    const user = await User.findById(new ObjectId(userID))
+    if(!user){
+        return res.status(404).json({error: 'User not found'})
+    }
+    return res.status(200).json({user})
+})
+
 router.put('/block/:userID',
 check('userID')
 .notEmpty().withMessage('UserID field cannot be empty')
