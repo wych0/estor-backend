@@ -77,15 +77,15 @@ async (req, res) => {
     if(!user){
         return res.status(404).json({message: 'Invalid e-mail or password'})
     }
-    if(user.accountStatus!=='Aktywne'){
-        return res.status(403).json({message: 'Your account is blocked'})
-    }
     bcrypt.compare(password, user.password, (err, isMatch) =>{
         if(err){
             return res.status(500).json({message: 'Error occured'})
         }
         if(!isMatch){
             return res.status(403).json({message: 'Invalid e-mail or password'})
+        }
+        if(user.accountStatus!=='Aktywne'){
+            return res.status(403).json({message: 'Your account is blocked'})
         }
         res.cookie('userID', user._id.toString())
         res.status(200).json({message: "Logged in", role: user.role})
