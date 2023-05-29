@@ -18,6 +18,19 @@ async (req, res) =>{
     return res.status(200).json({role: user.role})
 })
 
+router.get('/isBlocked',
+async (req, res) =>{
+    if(!req.cookies.userID){
+        return res.status(200).json({isBlocked: false})
+    }
+    const user = await User.findById(new ObjectId(req.cookies.userID))
+    if(!user){
+        return res.status(404).json({message: 'User not found'})
+    }
+    const isBlocked = user.accountStatus==='Aktywne' ? false : true
+    return res.status(200).json({isBlocked})
+})
+
 router.get('/address',
 async(req, res)=>{
     const userID = req.cookies.userID
