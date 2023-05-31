@@ -135,7 +135,7 @@ async(req, res)=>{
     if(user.role!=='admin'){
         return res.status(403).json({error: 'You cannot perform this action'})
     }
-    const orders = await Order.find()
+    const orders = await Order.find().sort({status: -1})
     if(!orders){
         return res.status(404).json({message: 'No orders in database'})
     }
@@ -180,6 +180,40 @@ async (req, res) =>{
     }
     const isCancelled = order.status==='Anulowane' ? true : false
     return res.status(200).json({isCancelled})
+})
+
+router.put('/complete/:orderID',
+check('orderID')
+.notEmpty().withMessage('OrderID field cannot be empty')
+.trim()
+.escape()
+.isMongoId().withMessage('Invalid id'),
+async(req, res) => {
+    const errors = validationResult(req)
+    if(!errors.isEmpty()){
+        return res.status(400).json({errors: errors.array()})
+    }
+    const userID = req.cookies.userID
+    const user = await User.findById(new ObjectId(userID))
+    if(!user){
+        return res.status(404).json({error: 'User with that id not found'})
+    }
+    const {orderID} = req.params
+    const order = await Order.findOne({_id: new ObjectId(orderID)})
+    if(!order){
+        return res.status(404).json({error: 'Order with that id not found'})
+    }
+
+    if(user.role !== 'admin'){
+        return res.status(403).json({message: 'You cannot complete order'})
+    }
+
+    if(order.status!=='W realizacji'){
+        return res.status(403).json({error: 'This order cannot be completed'})
+    }
+
+    await Order.findByIdAndUpdate(new ObjectId(orderID), {status: 'Dostarczone'})
+    return res.status(200).json({message: 'Order completed'})
 })
 
 
