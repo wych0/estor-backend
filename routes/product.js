@@ -50,21 +50,12 @@ async (req, res) => {
 }
 )
 
-router.delete('/',
+router.delete('/:productID',
 check('productID')
 .trim()
 .escape()
 .notEmpty().withMessage('ProductID field cannot be empty')
-.isMongoId().withMessage('Invalid id')
-.custom(async(productID)=>{
-    const product = await Product.findById(new ObjectId(productID))
-    if(!product){
-        return Promise.reject('Product with that id not found')
-    }
-    if(product.isSold===true){
-        return Promise.reject('You cant delete sold product from database')
-    }
-}),
+.isMongoId().withMessage('Invalid id'),
 async (req, res) => { 
     const errors = validationResult(req)
     if(!errors.isEmpty()){
@@ -78,9 +69,12 @@ async (req, res) => {
     if(user.role!=='admin'){
         return res.status(403).json({message: 'You cannot delete product from database'})
     }
-    const {productID} = req.body
-    const result = await Product.deleteOne({_id: new ObjectId(productID)})
-    console.log(result)
+    const {productID} = req.params
+    const product = await Product.findById(new ObjectId(productID))
+    if(!product){
+        return res.status(404).json({error: 'Product with that id not found'})
+    }
+    await Product.deleteOne({_id: new ObjectId(productID)})
     res.status(200).json({message: "Deleted product"})
 }
 )
