@@ -17,12 +17,12 @@ async(req, res)=>{
         return res.status(404).json({message: 'User not found'})
     }
     const updatedCartItems = []
-    for(const item of user.cartItems){
-        const product = await Product.findById(item._id)
-        if(!product.isSold){
-            updatedCartItems.push(product)
+    for (const item of user.cartItems) {
+        const product = await Product.findById(item._id);
+        if (product && !product.isSold) {
+          updatedCartItems.push(product);
         }
-    }
+      }
     user.cartItems = updatedCartItems
     await user.save()
     return res.status(200).json({cartItems: user.cartItems})
