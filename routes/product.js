@@ -5,26 +5,32 @@ const router = express.Router()
 const Product = require('../models/product')
 const User = require('../models/User')
 const cookieParser = require('cookie-parser')
+const multer = require('multer')
 router.use(cookieParser())
 
+const storage = multer.diskStorage({
+    destination: function(req, file, cb){
+        cb(null, 'public/images/')
+    },
+    filename: function(req, file, cb){
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        cb(null, file.fieldname + '-' + uniqueSuffix + '.' + file.originalname.split('.').pop())
+    }
+})
+
+const upload = multer({storage: storage})
+
 router.post('/create',
+upload.single('image'),
 check(['name', 'brand'])
 .escape()
 .trim()
 .notEmpty().withMessage('This field cannot be empty'),
-
 check('price')
 .escape()
 .trim()
 .notEmpty().withMessage('Price field cannot be empty')
 .isDecimal().withMessage('Price field must be a number'),
-
-check('image')
-.escape()
-.trim()
-.notEmpty().withMessage('Image field cannot be empty')
-.matches(/[^\\s]+(.*?)\.(jpg|jpeg|png|)$/i).withMessage('Wrong file name, remember about extension'),
-
 async (req, res) => {
     const errors = validationResult(req)
     if(!errors.isEmpty()){
@@ -38,17 +44,20 @@ async (req, res) => {
     if(user.role!=='admin'){
         return res.status(403).json({message: 'You cant add product to database'})
     }
-    const {name, brand, price, image} = req.body
+    const image = req.file
+    if(!image){
+        return res.status(403).json({message: 'Image file is required'})
+    }
+    const {name, brand, price} = req.body
     const product = new Product({
         name,
         brand,
         price,
-        image
+        image: image.filename
     })
     await product.save()
     res.status(200).json({message: "Created product"})
-}
-)
+})
 
 router.delete('/:productID',
 check('productID')
@@ -114,7 +123,7 @@ async(req, res) =>{
     return res.status(200).json({message: 'Product added to cart', product: product})
 })
 
-router.delete('/deleteFromCart',
+router.post('/deleteFromCart',
 check('productID')
 .trim()
 .escape()
