@@ -16,6 +16,7 @@ const db = mongoose.connection
 db.on('error', (error) => console.log(error))
 db.once('open', () => console.log('Connected to database'))
 
+app.use(express.static('public'))
 app.use(express.json())
 app.use(cors({
   origin: 'http://localhost:3000',
