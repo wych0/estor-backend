@@ -6,7 +6,9 @@ const Product = require('../models/product')
 const User = require('../models/User')
 const cookieParser = require('cookie-parser')
 const multer = require('multer')
+const fs = require('fs')
 router.use(cookieParser())
+const formatString = require('../formatString')
 
 const storage = multer.diskStorage({
     destination: function(req, file, cb){
@@ -50,8 +52,8 @@ async (req, res) => {
     }
     const {name, brand, price} = req.body
     const product = new Product({
-        name,
-        brand,
+        name: formatString(name),
+        brand: formatString(brand),
         price,
         image: image.filename
     })
@@ -82,6 +84,13 @@ async (req, res) => {
     const product = await Product.findById(new ObjectId(productID))
     if(!product){
         return res.status(404).json({error: 'Product with that id not found'})
+    }
+    if(!product.isSold){
+        fs.unlink(`public/images/${product.image}`, (error)=>{
+            if(error){
+                console.log(error)
+            }
+        })
     }
     await Product.deleteOne({_id: new ObjectId(productID)})
     res.status(200).json({message: "Deleted product"})
